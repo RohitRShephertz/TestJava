@@ -3,8 +3,10 @@ package com.shephertz.app42.paas.sample;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -36,15 +38,28 @@ public class FormSave extends HttpServlet {
 		response.setContentType("text/html");
 		String startTime = new java.sql.Timestamp(
 				new java.util.Date().getTime()).toString();
-		PrintWriter out = response.getWriter();
-		double cpuUsage = new CpuThread().getCpuLoad();
+
+		try {
+			String query = "select * from user";
+			ArrayList<Map<String, Object>> list = DBManager.getInstance()
+					.select(query);
+			response.setContentType("text/html");
+			PrintWriter out = response.getWriter();
+			for (int i = 0; i < list.size(); i++) {
+				Map<String, Object> obj = (Map<String, Object>) list.get(i);
+				out.print(obj);
+				out.print("</br>");
+			}
+		} catch (Exception e) {
+
+		}
 		String stopTime = new java.sql.Timestamp(new java.util.Date().getTime())
 				.toString();
+
 		System.out.println("======Request Time: " + startTime
 				+ " ======= Response Time: " + stopTime + " ========="
 				+ getTotalHours(startTime, stopTime));
-		out.print("<!doctype html><html><head><meta charset='utf-8'><title>App42 CPU-Intensive App</title><body><h2>CPU Usage: <b>"
-				+ cpuUsage + "</b> %</h2></body></html>");
+
 	}
 
 	/**
@@ -69,10 +84,11 @@ public class FormSave extends HttpServlet {
 			DBManager db = new DBManager();
 			db.insert(query);
 			// Redirect to new url
-		String newUrl = "http://" + request.getServerName() + ":"
-				+ request.getServerPort() + request.getContextPath() + "/home";
-		response.setStatus(response.SC_MOVED_PERMANENTLY);
-		response.setHeader("Location", newUrl);
+			String newUrl = "http://" + request.getServerName() + ":"
+					+ request.getServerPort() + request.getContextPath()
+					+ "/home";
+			response.setStatus(response.SC_MOVED_PERMANENTLY);
+			response.setHeader("Location", newUrl);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			response.setContentType("text/html");
@@ -84,7 +100,7 @@ public class FormSave extends HttpServlet {
 		}
 
 	}
-	
+
 	public static String getTotalHours(String dateStart, String dateStop) {
 
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
